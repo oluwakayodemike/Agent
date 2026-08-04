@@ -23,8 +23,16 @@ def main():
     ]
     
     response = client.chat.completions.create(model="openrouter/free", messages=messages)
-    
-    print(response.choices[0].message.content)
 
+    message_dict = messages[0]
+    print(f"User prompt: {message_dict.get('content')}")    
+
+    if response is None:
+        raise RuntimeError("No response generated ")
+        
+    print(f"Prompt tokens: {response.usage.prompt_tokens}")
+    print(f"Response tokens: {response.usage.completion_tokens}")
+    print(f"Response: {response.choices[0].message.content}")
+    
 if __name__ == "__main__":
     main()
