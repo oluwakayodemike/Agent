@@ -1,4 +1,5 @@
 import os
+import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -14,18 +15,22 @@ def main():
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key, 
     )
+
+    parser = argparse.ArgumentParser(description="Chatbot")
+    parser.add_argument("user_prompt", type=str, help="User prompt")
+    args = parser.parse_args()
     
     messages = [
         {
             "role": "user",
-            "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+            "content": args.user_prompt,
         }
     ]
     
     response = client.chat.completions.create(model="openrouter/free", messages=messages)
 
     message_dict = messages[0]
-    print(f"User prompt: {message_dict.get('content')}")    
+    print(f"User prompt: {message_dict.get('content')}")
 
     if response is None:
         raise RuntimeError("No response generated ")
