@@ -4,12 +4,14 @@ from functions.get_files_info import get_files_info, schema_get_files_info
 from functions.get_files_content import get_file_content, schema_get_file_content
 from functions.run_python_file import run_python_file, schema_run_python_file
 from functions.write_file import schema_write_file, write_file
+from functions.get_current_time import schema_get_current_time, get_current_time
 
 available_functions = [
     schema_get_files_info,
     schema_get_file_content,
     schema_run_python_file,
     schema_write_file,
+    schema_get_current_time,
 ]
 
 function_map: dict[str, Callable[..., str]] = {
@@ -17,6 +19,7 @@ function_map: dict[str, Callable[..., str]] = {
     "get_file_content": get_file_content,
     "run_python_file": run_python_file,
     "write_file": write_file,
+    "get_current_file": get_current_time
 }
 
 def call_function(tool_call, verbose: bool = False) -> dict:
