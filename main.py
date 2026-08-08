@@ -1,6 +1,7 @@
 import os
 import argparse
 import json
+import sys
 from prompts import system_prompt
 from call_function import available_functions, call_function
 from dotenv import load_dotenv
@@ -38,29 +39,36 @@ def main():
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
         
-    response = client.chat.completions.create(model="openrouter/free", messages=messages, tools=available_functions, temperature=0,)
-    
-    if response is None:
-        raise RuntimeError("No response generated ")
+    for _ in range(20):
+        response = client.chat.completions.create(model="openrouter/free", messages=messages, tools=available_functions, temperature=0,)
         
-    if response.usage and args.verbose:
-        print(f"Prompt tokens: {response.usage.prompt_tokens}")
-        print(f"Response tokens: {response.usage.completion_tokens}")
-
-    message = response.choices[0].message
+        if response is None:
+            raise RuntimeError("No response generated ")
+            
+        if response.usage and args.verbose:
+            print(f"Prompt tokens: {response.usage.prompt_tokens}")
+            print(f"Response tokens: {response.usage.completion_tokens}")
     
-    if not message.tool_calls:
-        if message.content:
-            print(f"Response: {response.choices[0].message.content}")
+        message = response.choices[0].message
+        messages.append(message)
         
-    if message.tool_calls:    
-        for tool_call in message.tool_calls:
-            result_message = call_function(tool_call, args.verbose)
+        if not message.tool_calls:
+            if message.content:
+                print(f"Response: {response.choices[0].message.content}")
+                break
+            
+        if message.tool_calls:    
+            for tool_call in message.tool_calls:
+                result_message = call_function(tool_call, args.verbose)
+                messages.append(result_message)
+    
+                if not result_message["content"]:
+                    raise Exception("content missing")
+    
+                if args.verbose:
+                    print(f"-> {result_message['content']}")
 
-            if not result_message["content"]:
-                raise Exception("content missing")
-
-            if args.verbose:
-                print(f"-> {result_message['content']}")
+    else:
+        sys.exit("something went wrong: agent produced no result.")
 if __name__ == "__main__":
     main()
