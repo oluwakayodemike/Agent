@@ -1,6 +1,8 @@
 import os
 import argparse
+import json
 from prompts import system_prompt
+from call_function import available_functions
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -33,19 +35,27 @@ def main():
         }
     ]
     
-    response = client.chat.completions.create(model="openrouter/free", messages=messages, temperature=0,)
-
+    response = client.chat.completions.create(model="openrouter/free", messages=messages, tools=available_functions, temperature=0,)
+       
     if response is None:
         raise RuntimeError("No response generated ")
 
+    message = response.choices[0].message
+
+    if message.tool_calls:    
+        for tool_call in message.tool_calls:
+            function_args = json.loads(tool_call.function.arguments or "{}")
+            print(f"Calling function: {tool_call.function.name}({function_args})")
+        
     if args.verbose:
         message_dict = messages[0]
-        print(f"User prompt: {message_dict.get('content')}")
+        print(f"System prompt: {message_dict.get('content')}")
         print(f"User prompt: {args.user_prompt}")
         print(f"Prompt tokens: {response.usage.prompt_tokens}")
         print(f"Response tokens: {response.usage.completion_tokens}")
     else:
-        print(f"Response: {response.choices[0].message.content}")
-        
+        if response.choices[0].message.content:
+            print(f"Response: {response.choices[0].message.content}")
+
 if __name__ == "__main__":
     main()
