@@ -1,5 +1,27 @@
 import os
 
+schema_write_file = {
+    "type": "function",
+    "function": {
+        "name": "write_file",
+        "description": "writes or overwrites a file relative to the working directory with content provided. automatically creates parent directories if they do not exist",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "the exact path of the file to write/overwrite, relative to the working directory.",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "the exact text content to write into the file",
+                },      
+            },
+            "required": ["file_path", "content"]
+        },
+    },
+}
+
 def write_file(working_directory: str, file_path: str, content: str) -> str:
     try:
         abs_working_path = os.path.abspath(working_directory)
@@ -21,6 +43,6 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
         with open(target_path, "w", encoding="utf-8") as file:
             file.write(content)
 
-            return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+        return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
     except Exception as e:
         return f"Error: {e}"
